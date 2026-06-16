@@ -12,19 +12,8 @@ class CH3WORLD_API AMineItem : public ABaseItem
 public:
 	AMineItem();
 	
-protected:
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Collision")
 	USphereComponent* ExplosionCollision;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mine")
-	float ExplosionDelay;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mine")
-	float ExplosionRadius;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mine")
-	float ExplosionDamage;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
 	UParticleSystem* ExplosionParticle;
@@ -32,7 +21,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
 	USoundBase* ExplosionSound;
 	
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	float ExplosionDelay;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	float ExplosionRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	int32 ExplosionDamage;
+	
 	bool bHasExploded;
+	
 	FTimerHandle ExplosionTimerHandle;
 	
 	virtual void ActivateItem(AActor* Activator) override;

@@ -3,7 +3,7 @@
 
 AHealingItem::AHealingItem()
 {
-	HealAmount = 20.0f;
+	HealAmount = 20;
 	ItemType = "Healing";
 }
 
@@ -13,15 +13,8 @@ void AHealingItem::ActivateItem(AActor* Activator)
 	{
 		if (ASpartaCharacter* PlayerCharacter = Cast<ASpartaCharacter>(Activator))
 		{
-			//test용 텍스트
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-				FString::Printf(TEXT("Player gained %f HP!"), HealAmount));
-			
 			PlayerCharacter->AddHealth(HealAmount);
 		}
-		
-		DestroyItem();
 	}
-	
+	Super::ActivateItem(Activator);
 }
-

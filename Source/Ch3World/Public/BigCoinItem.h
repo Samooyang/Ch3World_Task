@@ -11,6 +11,4 @@ class CH3WORLD_API ABigCoinItem : public ACoinItem
 	
 public:
 	ABigCoinItem();
-	
-	virtual void ActivateItem(AActor* Activator) override;
 };

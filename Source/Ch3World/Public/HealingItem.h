@@ -12,9 +12,8 @@ class CH3WORLD_API AHealingItem : public ABaseItem
 public:
 	AHealingItem();
 	
-protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	float HealAmount;
+	int32 HealAmount;
 	
 	virtual void ActivateItem(AActor* Activator) override;
 };

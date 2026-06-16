@@ -5,8 +5,8 @@
 
 ABaseItem::ABaseItem()
 {
-	PrimaryActorTick.bCanEverTick = false;
-	
+ 	PrimaryActorTick.bCanEverTick = false;
+
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	SetRootComponent(Scene);
 	
@@ -22,53 +22,49 @@ ABaseItem::ABaseItem()
 }
 
 void ABaseItem::OnItemOverlap(
-		UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResult)
+	UPrimitiveComponent* OverlappedComp,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex,
+	bool bFromSweep,
+	const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
-		//text 텍스트 출력
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Overlap")));
-		
 		ActivateItem(OtherActor);
 	}
 }
 
 void ABaseItem::OnItemEndOverlap(
-		UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex)
+	UPrimitiveComponent* OverlappedComp,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
 {
+	
 }
 
 void ABaseItem::ActivateItem(AActor* Activator)
 {
-	UParticleSystemComponent* Particle;
-	
 	if (PickupParticle)
 	{
-		Particle = UGameplayStatics::SpawnEmitterAtLocation(
+		UGameplayStatics::SpawnEmitterAtLocation(
 			GetWorld(),
 			PickupParticle,
 			GetActorLocation(),
 			GetActorRotation(),
 			FVector(1.0f),
 			true
-			);
+		);
 	}
-	
+
 	if (PickupSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(
 			GetWorld(),
 			PickupSound,
 			GetActorLocation()
-			);
+		);
 	}
 	
 	DestroyItem();
@@ -83,3 +79,4 @@ void ABaseItem::DestroyItem()
 {
 	Destroy();
 }
+

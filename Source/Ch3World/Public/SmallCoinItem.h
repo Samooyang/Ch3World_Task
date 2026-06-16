@@ -11,6 +11,4 @@ class CH3WORLD_API ASmallCoinItem : public ACoinItem
 	
 public:
 	ASmallCoinItem();
-	
-	virtual void ActivateItem(AActor* Activator) override;
 };

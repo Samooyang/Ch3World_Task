@@ -6,7 +6,6 @@
 #include "Components/TextBlock.h"
 #include "Blueprint/UserWidget.h"
 #include "SpartaGameInstance.h"
-#include "SpartaPlayerController.h"
 
 ASpartaGameStateBase::ASpartaGameStateBase()
 {
@@ -118,7 +117,7 @@ void ASpartaGameStateBase::StartLevel()
 
 void ASpartaGameStateBase::OnLevelTimeUp()
 {
-	EndLevel();
+	OnGameOver();
 	//test용
 	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, 
 			FString::Printf(TEXT("시간 초과!")));

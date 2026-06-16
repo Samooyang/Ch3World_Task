@@ -12,10 +12,11 @@ class CH3WORLD_API ABaseItem : public AActor, public IItemInterface
 {
 	GENERATED_BODY()
 	
-public:	
+public:
 	ABaseItem();
 
 protected:
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FName ItemType;
 	
@@ -25,12 +26,13 @@ protected:
 	USphereComponent* Collision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
 	UStaticMeshComponent* StaticMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
-	UParticleSystem* PickupParticle;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
-	USoundBase* PickupSound;
 	
-	//ItemInterface.h 오버라이딩
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item|Effects")
+	UParticleSystem* PickupParticle;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item|Effects")
+	USoundBase* PickupSound;
+
+public:
 	virtual void OnItemOverlap(
 		UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
@@ -38,15 +40,12 @@ protected:
 		int32 OtherBodyIndex,
 		bool bFromSweep,
 		const FHitResult& SweepResult) override;
-	
 	virtual void OnItemEndOverlap(
 		UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex) override;
-	
 	virtual void ActivateItem(AActor* Activator) override;
-	
 	virtual FName GetItemType() const override;
 	
 	virtual void DestroyItem();
