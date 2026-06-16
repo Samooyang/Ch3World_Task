@@ -113,16 +113,6 @@ void ASpartaPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 					&ASpartaPawn::Look
 				);
 			}
-
-			if (PlayerController->RollAction)
-			{
-				EnhancedInput->BindAction(
-					PlayerController->RollAction,
-					ETriggerEvent::Triggered,
-					this,
-					&ASpartaPawn::Roll
-				);
-			}
 		}
 	}
 }
