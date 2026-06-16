@@ -26,6 +26,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mine")
 	float ExplosionDamage;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
+	UParticleSystem* ExplosionParticle;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
+	USoundBase* ExplosionSound;
+	
+	bool bHasExploded;
 	FTimerHandle ExplosionTimerHandle;
 	
 	virtual void ActivateItem(AActor* Activator) override;

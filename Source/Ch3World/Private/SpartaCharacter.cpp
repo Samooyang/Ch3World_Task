@@ -4,6 +4,9 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Actor.h"
+#include "Components/WidgetComponent.h"
+#include "Components/TextBlock.h"
 
 ASpartaCharacter::ASpartaCharacter()
 {
@@ -17,11 +20,26 @@ ASpartaCharacter::ASpartaCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
+	
+	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
+	OverheadWidget->SetupAttachment(GetMesh());
+	OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
 
 	MoveSpeed = 600.0f;
 	SprintSpeedMultiplier = 1.8f;
 	SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+	
+	MaxHealth = 100.0f;
+	Health = MaxHealth;
+	
+	Tags.Add(FName("Player"));
+}
+
+void ASpartaCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	UpdateOverheadHP();
 }
 
 void ASpartaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -145,3 +163,53 @@ void ASpartaCharacter::Look(const FInputActionValue& value)
 	AddControllerYawInput(LookInput.X);
 	AddControllerPitchInput(LookInput.Y);
 }
+
+float ASpartaCharacter::GetHealth() const
+{
+	return Health;
+}
+
+void ASpartaCharacter::AddHealth(float Amount)
+{
+	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
+	UpdateOverheadHP();
+}
+
+float ASpartaCharacter::TakeDamage(
+		float DamageAmount, 
+		FDamageEvent const& DamageEvent, 
+		AController* EventInstigator,
+		AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	Health = FMath::Clamp(Health - DamageAmount, 0.0f, MaxHealth);
+	UpdateOverheadHP();
+	
+	if (Health <= 0.0f)
+	{
+		OnDeath();
+	}
+	
+	return ActualDamage;
+}
+
+void ASpartaCharacter::OnDeath()
+{
+	//사망시 출력 test 텍스트
+	UE_LOG(LogTemp, Error, TEXT("Character is Dead"));
+}
+
+void ASpartaCharacter::UpdateOverheadHP()
+{
+	if (!OverheadWidget) return;
+	
+	UUserWidget* OverheadWidgetInstance = OverheadWidget->GetUserWidgetObject();
+	if (!OverheadWidgetInstance) return;
+	
+	if (UTextBlock* HPText = Cast<UTextBlock>(OverheadWidgetInstance->GetWidgetFromName(TEXT("OverheadHP"))))
+	{
+		HPText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), Health, MaxHealth)));
+	}
+}
+

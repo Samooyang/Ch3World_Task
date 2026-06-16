@@ -32,18 +32,16 @@ public:
 	int32 MaxItemCount;
 	
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
-	void SpawnRandomItem();
+	AActor* SpawnRandomItem();
 	
 	
 	FVector GetRandomPointInVolume() const;
 	FItemSpawnRow* GetRandomItem() const;
-	void SpawnItem(TSubclassOf<AActor> ItemClass);
+	AActor* SpawnItem(TSubclassOf<AActor> ItemClass);
 	
 	
 protected:
-	virtual void BeginPlay();
-	
-	
+		
 private:
 	FTimerHandle SpawnTimerHandle;
 	

@@ -1,5 +1,7 @@
 #include "BaseItem.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 ABaseItem::ABaseItem()
 {
@@ -42,14 +44,34 @@ void ABaseItem::OnItemEndOverlap(
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex)
 {
-	//text 텍스트 출력
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("EndOverlap")));
 }
 
 void ABaseItem::ActivateItem(AActor* Activator)
 {
-	//text 텍스트 출력
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Overlapped For Activate")));
+	UParticleSystemComponent* Particle;
+	
+	if (PickupParticle)
+	{
+		Particle = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(),
+			PickupParticle,
+			GetActorLocation(),
+			GetActorRotation(),
+			FVector(1.0f),
+			true
+			);
+	}
+	
+	if (PickupSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			PickupSound,
+			GetActorLocation()
+			);
+	}
+	
+	DestroyItem();
 }
 
 FName ABaseItem::GetItemType() const

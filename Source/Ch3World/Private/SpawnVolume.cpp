@@ -1,6 +1,5 @@
 #include "SpawnVolume.h"
 #include "Components/BoxComponent.h"
-#include "Engine/World.h"
 #include "TimerManager.h"
 
 ASpawnVolume::ASpawnVolume()
@@ -21,45 +20,27 @@ ASpawnVolume::ASpawnVolume()
 	
 }
 
-void ASpawnVolume::BeginPlay()
-{
-	Super::BeginPlay();
-	
-	if (SpawnInterval > 0.0f && MaxItemCount > 0)
-	{
-		GetWorld()->GetTimerManager().SetTimer(
-			SpawnTimerHandle,
-			this,
-			&ASpawnVolume::SpawnRandomItem,
-			SpawnInterval,
-			true
-			);
-	}
-}
-
-
-void ASpawnVolume::SpawnRandomItem()
+AActor* ASpawnVolume::SpawnRandomItem()
 {
 	if (SpawnedItemCount >= MaxItemCount)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
 		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Item Count On Map = 30!!!")));
-		return;
 	}
-	
-	
+		
 	if (FItemSpawnRow* SelectedRow = GetRandomItem())
 	{
 		if (UClass* ActualClass = SelectedRow->ItemClass.Get())
 		{
-			SpawnItem(ActualClass);
 			SpawnedItemCount++;
+			return SpawnItem(ActualClass);
 		}
 	}
+	return nullptr;
 }
 
 FVector ASpawnVolume::GetRandomPointInVolume() const
-{
+{	
 	const FVector BoxExtent = SpawningBox->GetScaledBoxExtent();
 	const FVector BoxOrigin = SpawningBox->GetComponentLocation();
 	
@@ -102,15 +83,14 @@ FItemSpawnRow* ASpawnVolume::GetRandomItem() const
 	return nullptr;
 }
 
-void ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
+AActor* ASpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
 {
-	if (!ItemClass) return;
+	if (!ItemClass) return nullptr;
 	
-	GetWorld()->SpawnActor<AActor>(
+	AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(
 		ItemClass,
 		GetRandomPointInVolume(),
 		FRotator::ZeroRotator
 		);
+	return SpawnedActor;
 }
-
-//Timer를 사용하여 지속적으로 스폰하게 만들기
