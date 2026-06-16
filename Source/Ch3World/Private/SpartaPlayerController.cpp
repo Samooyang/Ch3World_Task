@@ -67,15 +67,25 @@ void ASpartaPlayerController::ShowMainMenu(bool bIsRestart)
 			bShowMouseCursor = true;
 			SetInputMode(FInputModeUIOnly());
 		}
+		
+		UTextBlock* GameOverText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName(TEXT("GameOverText")));
+		UTextBlock* TotalScoreText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName(TEXT("TotalScoreText")));
+		
 		if (UTextBlock* ButtonText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName(TEXT("StartButtonText"))))
 		{
 			if (bIsRestart)
 			{
 				ButtonText->SetText(FText::FromString(TEXT("Restart")));
+				
+				if (GameOverText) GameOverText->SetVisibility(ESlateVisibility::Visible);
+				if (TotalScoreText) TotalScoreText->SetVisibility(ESlateVisibility::Visible);
 			}
 			else
 			{
 				ButtonText->SetText(FText::FromString(TEXT("Start")));
+				
+				if (GameOverText) GameOverText->SetVisibility(ESlateVisibility::Hidden);
+				if (TotalScoreText) TotalScoreText->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
 		
@@ -87,7 +97,7 @@ void ASpartaPlayerController::ShowMainMenu(bool bIsRestart)
 				MainMenuWidgetInstance->ProcessEvent(PlayAnimFunc, nullptr);
 			}
 			
-			if (UTextBlock* TotalScoreText = Cast<UTextBlock>(MainMenuWidgetInstance->GetWidgetFromName("TotalScoreText")))
+			if (TotalScoreText)
 			{
 				if (USpartaGameInstance* SpartaGameInstance = Cast<USpartaGameInstance>(UGameplayStatics::GetGameInstance(this)))
 				{

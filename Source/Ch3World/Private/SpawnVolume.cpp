@@ -12,27 +12,16 @@ ASpawnVolume::ASpawnVolume()
 	SpawningBox = CreateDefaultSubobject<UBoxComponent>(TEXT("SpawningBox"));
 	SpawningBox->SetupAttachment(Scene);
 	
-	MaxItemCount = 30;
-	SpawnedItemCount = 0;
-	
 	SpawnInterval = 0.5f;
 	ItemDataTable = nullptr;
-	
 }
 
 AActor* ASpawnVolume::SpawnRandomItem()
 {
-	if (SpawnedItemCount >= MaxItemCount)
-	{
-		GetWorld()->GetTimerManager().ClearTimer(SpawnTimerHandle);
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FString::Printf(TEXT("Item Count On Map = 30!!!")));
-	}
-		
 	if (FItemSpawnRow* SelectedRow = GetRandomItem())
 	{
 		if (UClass* ActualClass = SelectedRow->ItemClass.Get())
 		{
-			SpawnedItemCount++;
 			return SpawnItem(ActualClass);
 		}
 	}

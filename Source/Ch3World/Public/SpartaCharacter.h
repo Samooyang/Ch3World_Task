@@ -7,7 +7,6 @@
 class USpringArmComponent;
 class UCameraComponent;
 struct FInputActionValue;
-class UWidgetComponent;
 
 UCLASS()
 class CH3WORLD_API ASpartaCharacter : public ACharacter
@@ -23,11 +22,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
-	UWidgetComponent* OverheadWidget;
-	
 	UFUNCTION(BlueprintPure, Category = "Health")
 	float GetHealth() const;
+	
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void AddHealth(float Amount);
@@ -61,7 +60,6 @@ protected:
 	void StopSprint(const FInputActionValue& value);
 	
 	void OnDeath();
-	void UpdateOverheadHP();
 
 private:
 	float NormalSpeed;

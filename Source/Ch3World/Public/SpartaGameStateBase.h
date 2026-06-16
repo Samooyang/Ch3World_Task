@@ -4,6 +4,20 @@
 #include "GameFramework/GameState.h"
 #include "SpartaGameStateBase.generated.h"
 
+USTRUCT(BlueprintType)
+struct FWaveInfo
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	int32 SpawnCount;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Wave")
+	float WaveDuration;
+	
+	FWaveInfo() : SpawnCount(10), WaveDuration(30.0f) {}
+};
+
 UCLASS()
 class CH3WORLD_API ASpartaGameStateBase : public AGameStateBase
 {
@@ -37,9 +51,6 @@ public:
 	
 	//Level
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
-	float LevelDuration;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
 	int32 MaxLevels;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
@@ -49,8 +60,17 @@ public:
 	void OnGameOver();
 	
 	void StartLevel();
-	void OnLevelTimeUp();
 	void EndLevel();
+	
+	//Waves
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	TArray<FWaveInfo> Waves;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave")
+	int32 CurrentWaveIndex;
+	
+	void StartWave();
+	void OnWaveTimeUp();
 	
 	//Timer
 	FTimerHandle LevelTimerHandle;

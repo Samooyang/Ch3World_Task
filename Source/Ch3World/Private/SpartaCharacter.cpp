@@ -5,7 +5,6 @@
 #include "SpartaGameStateBase.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Components/WidgetComponent.h"
 #include "Components/TextBlock.h"
 
 ASpartaCharacter::ASpartaCharacter()
@@ -20,10 +19,6 @@ ASpartaCharacter::ASpartaCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 	CameraComp->bUsePawnControlRotation = false;
-	
-	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
-	OverheadWidget->SetupAttachment(GetMesh());
-	OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
 
 	NormalSpeed = 600.0f;
 	SprintSpeedMultiplier = 1.5f;
@@ -38,7 +33,6 @@ ASpartaCharacter::ASpartaCharacter()
 void ASpartaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	UpdateOverheadHP();
 }
 
 void ASpartaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -170,7 +164,6 @@ float ASpartaCharacter::GetHealth() const
 void ASpartaCharacter::AddHealth(float Amount)
 {
 	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
-	UpdateOverheadHP();	
 }
 
 float ASpartaCharacter::TakeDamage(
@@ -182,7 +175,6 @@ float ASpartaCharacter::TakeDamage(
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	
 	Health = FMath::Clamp(Health - ActualDamage, 0.0f, MaxHealth);
-	UpdateOverheadHP();
 	
 	if (Health <= 0.0f)
 	{
@@ -201,15 +193,7 @@ void ASpartaCharacter::OnDeath()
 	}
 }
 
-void ASpartaCharacter::UpdateOverheadHP()
+float ASpartaCharacter::GetMaxHealth() const
 {
-	if (!OverheadWidget) return;
-	
-	UUserWidget* OverheadWidgetInstance = OverheadWidget->GetUserWidgetObject();
-	if (!OverheadWidgetInstance) return;
-	
-	if (UTextBlock* HPText = Cast<UTextBlock>(OverheadWidgetInstance->GetWidgetFromName(TEXT("OverheadHP"))))
-	{
-		HPText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), Health, MaxHealth)));
-	}
+	return MaxHealth;
 }

@@ -38,12 +38,4 @@ public:
 	FVector GetRandomPointInVolume() const;
 	FItemSpawnRow* GetRandomItem() const;
 	AActor* SpawnItem(TSubclassOf<AActor> ItemClass);
-	
-	
-protected:
-		
-private:
-	FTimerHandle SpawnTimerHandle;
-	
-	int32 SpawnedItemCount;
 };

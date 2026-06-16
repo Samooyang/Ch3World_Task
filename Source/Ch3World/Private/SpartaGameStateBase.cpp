@@ -6,6 +6,8 @@
 #include "Components/TextBlock.h"
 #include "Blueprint/UserWidget.h"
 #include "SpartaGameInstance.h"
+#include "Components/ProgressBar.h"
+#include "SpartaCharacter.h"
 
 ASpartaGameStateBase::ASpartaGameStateBase()
 {
@@ -16,9 +18,10 @@ ASpartaGameStateBase::ASpartaGameStateBase()
 	SpawnedCoinCount = 0;
 	CollectedCoinCount = 0;
 	
-	//Level
-	LevelDuration = 40.0f;
+	//Level & Waves
 	MaxLevels = 3;
+	
+	CurrentWaveIndex = 0;
 }
 
 void ASpartaGameStateBase::BeginPlay()
@@ -51,8 +54,6 @@ void ASpartaGameStateBase::AddScore(int32 Amount)
 			SpartaGameInstance->AddToScore(Amount);
 		}
 	}
-	//테스트용 디버그 메시지
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("Score: %d"), Score));
 }
 
 void ASpartaGameStateBase::StartLevel()
@@ -64,77 +65,76 @@ void ASpartaGameStateBase::StartLevel()
 			SpartaPlayerController->ShowGameHUD();
 		}
 	}
+	CurrentWaveIndex = 0;
+	StartWave();
+}
 	
-	SpawnedCoinCount = 0;
-	CollectedCoinCount = 0;
-	
-	TArray<AActor*> FoundVolumes;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundVolumes);
-	
-	const int32 ItemToSpawn = 40;
-	
-	for (int32 i = 0; i < ItemToSpawn; i++)
+void ASpartaGameStateBase::StartWave()
+{
+	if (Waves.IsValidIndex(CurrentWaveIndex))
 	{
+		FWaveInfo& CurrentWave = Waves[CurrentWaveIndex];
+		
+		GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Red, FString::Printf(TEXT("Wave %d Start!!!"), CurrentWaveIndex + 1));
+	
+		SpawnedCoinCount = 0;
+		CollectedCoinCount = 0;
+		
+		TArray<AActor*> FoundVolumes;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnVolume::StaticClass(), FoundVolumes);
+		
 		if (FoundVolumes.Num() > 0)
 		{
-			ASpawnVolume* SpawnVolume = Cast<ASpawnVolume>(FoundVolumes[0]);
-			
-			if (SpawnVolume)
-			{
-				AActor* SpawnedActor = SpawnVolume->SpawnRandomItem();
+			int32 RandomIndex = FMath::RandRange(0, FoundVolumes.Num() - 1);
+			ASpawnVolume* SelectedVolume = Cast<ASpawnVolume>(FoundVolumes[RandomIndex]);
 				
-				if (SpawnedActor && SpawnedActor->IsA(ACoinItem::StaticClass()))
+			if (SelectedVolume)
+			{
+				for (int32 i = 0; i < CurrentWave.SpawnCount; i++)
 				{
-					SpawnedCoinCount++;
+					AActor* SpawnedActor = SelectedVolume->SpawnRandomItem();
+					
+					if (SpawnedActor && SpawnedActor->IsA(ACoinItem::StaticClass()))
+					{
+						SpawnedCoinCount++;
+					}
 				}
 			}
 		}
-	}
-	
-	GetWorldTimerManager().SetTimer(
+		
+		
+		GetWorldTimerManager().SetTimer(
 		LevelTimerHandle,
 		this,
-		&ASpartaGameStateBase::OnLevelTimeUp,
-		LevelDuration,
+		&ASpartaGameStateBase::OnWaveTimeUp,
+		CurrentWave.WaveDuration,
 		false
 		);
-	
-	int32 CurrentLevel = 0;
-	if (UGameInstance* GameInstance = GetGameInstance())
-	{
-		if (USpartaGameInstance* SpartaGameInstance = Cast<USpartaGameInstance>(GameInstance))
-		{
-			CurrentLevel = SpartaGameInstance->CurrentLevelIndex;
-		}
 	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Red, TEXT("Waves All Clear!!!"));
+		EndLevel();
+	}
+}	
 	
-		//테스트용 디버그 메시지
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, 
-			FString::Printf(TEXT("Level %d Start!, Spawned %d Coins!"), 
-				CurrentLevel + 1,
-				SpawnedCoinCount));
-}
-
-void ASpartaGameStateBase::OnLevelTimeUp()
+void ASpartaGameStateBase::OnWaveTimeUp()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Blue,TEXT("Times Up!!! Game Over!!!"));
 	OnGameOver();
-	//test용
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, 
-			FString::Printf(TEXT("시간 초과!")));
 }
 
 void ASpartaGameStateBase::OnCoinCollected()
 {
 	CollectedCoinCount++;
-	//test용
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, 
-			FString::Printf(TEXT("Coin Collected: %d / %d"), 
-				CollectedCoinCount,
-				SpawnedCoinCount));
-	
+
 	if (SpawnedCoinCount > 0 && CollectedCoinCount >= SpawnedCoinCount)
 	{
-		EndLevel();
+		GetWorldTimerManager().ClearTimer(LevelTimerHandle);
+		GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange,FString::Printf(TEXT("Wave %d Clear!!!"), CurrentWaveIndex + 1));
+		
+		CurrentWaveIndex++;
+		StartWave();
 	}
 }
 
@@ -210,6 +210,24 @@ void ASpartaGameStateBase::UpdateHUD()
 						{
 							LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT("Level: %d"), SpartaGameInstance->CurrentLevelIndex + 1)));
 						}
+					}
+				}
+				if (UTextBlock* WaveText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("WaveText"))))
+				{
+					WaveText->SetText(FText::FromString(FString::Printf(TEXT("Wave: %d"), CurrentWaveIndex + 1)));
+				}
+				
+				if (ASpartaCharacter* SpartaCharacter = Cast<ASpartaCharacter>(PlayerController->GetPawn()))
+				{
+					if (UProgressBar* HPBar = Cast<UProgressBar>(HUDWidget->GetWidgetFromName(TEXT("HPBar"))))
+					{
+						float HealthPercent = SpartaCharacter->GetHealth() / SpartaCharacter->GetMaxHealth();
+						HPBar->SetPercent(HealthPercent);
+					}
+					if (UTextBlock* HPText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("HPText"))))
+					{
+						HPText->SetText(FText::FromString(
+							FString::Printf(TEXT("%.0f / %.0f"), SpartaCharacter->GetHealth(), SpartaCharacter->GetMaxHealth())));
 					}
 				}
 			}
